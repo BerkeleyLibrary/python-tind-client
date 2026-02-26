@@ -31,6 +31,7 @@ Create a `TINDClient` with explicit configuration values:
 
 ## Usage
 
+### instantiate a client
 ```python
 from tind_client import TINDClient
 
@@ -39,16 +40,25 @@ client = TINDClient(
 	api_url="https://tind.example.edu",
 	default_storage_dir="/tmp",
 )
+```
 
-# Fetch MARC metadata for a record
+### Fetch pyMARC metadata for a record
+```python
 record = client.fetch_metadata("12345")
 print(record["245"]["a"])  # title
+```
 
-# Download a file
-path = client.fetch_file("https://tind.example.edu/files/12345/download")
+### Fetch file metadata for a record
+```python
+metadata = client.fetch_file_metadata("12345")
+print(metadata[0]) # first file metadata dict
+print(metadata[0]["url"]) # file download URL
+```
 
-# Search and retrieve PyMARC records
-records = client.search("title:python programming", result_format="pymarc")
+### Download a file
+```python
+# use metadata from previous example
+path_to_download = client.fetch_file(metadata[0].url)
 ```
 
 ## Functional fetch API
