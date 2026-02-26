@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "python-tind-client"
+version = "0.1.0"
+description = "Python library for interacting with the TIND API"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Jason Raitz", email = "raitz@berkeley.edu" },
+]
+requires-python = ">=3.13"
+dependencies = [
+    "requests>=2.32",
+    "pymarc>=5.2",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.3",
+    "requests-mock>=1.12",
+]
+lint = [
+    "mypy>=1.14",
+    "pydoclint>=0.5",
+    "pylint>=3.3",
+    "types-requests>=2.32",
+]
+debug = [
+    "debugpy>=1.8",
+]
+dev = [
+    "python-tind-client[test,lint,debug]",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tind_client*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+
+[tool.pylint.main]
+py-version = "3.13"
+
+[tool.pylint.messages_control]
+disable = ["C0114"]  # missing-module-docstring — already covered by file-level docstrings
