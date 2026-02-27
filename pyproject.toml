@@ -44,10 +44,19 @@ testpaths = ["tests"]
 
 [tool.mypy]
 python_version = "3.13"
-strict = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_return_any = true
+strict_equality = true
+check_untyped_defs = true
+disallow_subclassing_any = true
+# We can't enable disallow_untyped_calls because of PyMARC.
+disallow_untyped_calls = false
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
 
-[tool.pylint.main]
-py-version = "3.13"
+[tool.pydoclint]
+allow-init-docstring = true
+skip-checking-raises = true
+style = "sphinx"
 
-[tool.pylint.messages_control]
-disable = ["C0114"]  # missing-module-docstring — already covered by file-level docstrings

@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented TINDClient to wrap API interactions
 
 ### Changed
-- N/A
+- updates to workflow actions and pyproject.toml
 
 ### Deprecated
 - N/A

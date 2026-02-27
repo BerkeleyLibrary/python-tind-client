@@ -35,7 +35,7 @@ def fetch_metadata(record: str, *, api_key: str, api_url: str) -> Record:
     if status == 404 or len(response.strip()) == 0:
         raise RecordNotFoundError(f"Record {record} not found in TIND.")
 
-    records: list[Record] = parse_xml_to_array(StringIO(response))  # type: ignore[no-untyped-call]
+    records: list[Record] = parse_xml_to_array(StringIO(response))
     # When the record does not match any records, we may receive a zero-length array of records.
     # Additionally, if the XML is malformed, the parser function may return multiple records.
     # We need to ensure that exactly one record is parsed out of the TIND API response.
@@ -232,7 +232,7 @@ def search(
         records = list(collection) if collection is not None else []
 
         if result_format == "pymarc":
-            recs = recs + parse_xml_to_array(StringIO(response))  # type: ignore[no-untyped-call]
+            recs = recs + parse_xml_to_array(StringIO(response))
         else:
             for record in records:
                 recs.append(E.tostring(record, encoding="unicode"))

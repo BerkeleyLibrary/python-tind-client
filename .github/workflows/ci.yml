@@ -1,36 +1,33 @@
 name: CI
 
-on:
-  push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
-
+on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.13"]
+        python-version:
+          - "3.13"
+          - "3.14"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
         with:
+          version: "0.10.7"
           python-version: ${{ matrix.python-version }}
+          enable-cache: true
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install ".[test,lint]"
+      - name: Sync dependencies
+        run: uv sync --locked --all-extras --dev
 
       - name: Lint with pylint
-        run: pylint tind_client/
+        run: uv run pylint tind_client tests
 
       - name: Type-check with mypy
-        run: mypy tind_client/
+        run: uv run mypy tind_client tests
 
       - name: Run tests
-        run: pytest
+        run: uv run pytest
