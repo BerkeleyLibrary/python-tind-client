@@ -45,8 +45,8 @@ class TINDClient:
         """
         status, response = tind_get(
             f"record/{record}/",
-            api_key=self.api_key or os.environ.get("TIND_API_KEY", ""),
-            api_url=self.api_url or os.environ.get("TIND_API_URL", ""),
+            api_key=self.api_key,
+            api_url=self.api_url,
             params={"of": "xm"},
         )
         if status == 404 or len(response.strip()) == 0:
