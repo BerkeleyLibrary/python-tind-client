@@ -8,9 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial release
-- Basic project structure
 - Implemented TINDClient to wrap API interactions
+- Created tests, linting, and ci configurations
 
 ### Changed
 - N/A
