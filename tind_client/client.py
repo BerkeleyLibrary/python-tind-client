@@ -31,8 +31,8 @@ class TINDClient:
         api_url: str = "",
         default_storage_dir: str = "./tmp",
     ) -> None:
-        self.api_key = api_key
-        self.api_url = api_url
+        self.api_key = api_key or os.environ.get("TIND_API_KEY", "")
+        self.api_url = api_url or os.environ.get("TIND_API_URL", "")
         self.default_storage_dir = default_storage_dir
 
     def fetch_metadata(self, record: str) -> Record:
