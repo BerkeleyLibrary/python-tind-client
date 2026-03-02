@@ -27,8 +27,8 @@ class TINDClient:
 
     def __init__(
         self,
-        api_key: str = os.environ.get("TIND_API_KEY", ""),
-        api_url: str = os.environ.get("TIND_API_URL", ""),
+        api_key: str = "",
+        api_url: str = "",
         default_storage_dir: str = "./tmp",
     ) -> None:
         self.api_key = api_key
@@ -45,8 +45,8 @@ class TINDClient:
         """
         status, response = tind_get(
             f"record/{record}/",
-            api_key=self.api_key,
-            api_url=self.api_url,
+            api_key=self.api_key or os.environ.get("TIND_API_KEY", ""),
+            api_url=self.api_url or os.environ.get("TIND_API_URL", ""),
             params={"of": "xm"},
         )
         if status == 404 or len(response.strip()) == 0:

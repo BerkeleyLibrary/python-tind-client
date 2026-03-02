@@ -31,6 +31,11 @@ Create a `TINDClient` with optional configuration values:
 
 ## Usage
 
+### TIND Credentials / Optional ENV config
+You will need to either pass your TIND API credentials as arguments when instantiating a `TINDClient` or set them as environment variables with the following names:
+ - `TIND_API_KEY`
+ - `TIND_API_URL`
+
 ### instantiate a client
 ```python
 from tind_client import TINDClient
