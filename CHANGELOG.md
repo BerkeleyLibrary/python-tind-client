@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Created tests, linting, and ci configurations
 
 ### Changed
+- N/A
 
 ### Deprecated
 - N/A
