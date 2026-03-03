@@ -4,14 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "python-tind-client"
-version = "0.1.0"
-description = "Python library for interacting with the TIND API"
+version = "0.1.1"
+description = "Python library for interacting with the TIND DA API"
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
     { name = "Jason Raitz", email = "raitz@berkeley.edu" },
+    { name = "maría a. matienzo", email = "matienzo@berkeley.edu" },
 ]
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
     "requests>=2.32",
     "pymarc>=5.2",
