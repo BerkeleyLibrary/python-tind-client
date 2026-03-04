@@ -4,7 +4,7 @@ Python library for interacting with the [TIND DA](https://tind.io) API.
 
 ## Requirements
 
-- Python 3.13+
+- Python 3.12+
 
 ## Installation
 
