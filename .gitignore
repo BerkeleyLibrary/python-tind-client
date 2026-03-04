@@ -42,3 +42,7 @@ htmlcov/
 # Env files
 .env
 .env.*
+
+# package management
+uv.lock
+

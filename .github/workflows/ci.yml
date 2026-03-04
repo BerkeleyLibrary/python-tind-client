@@ -7,6 +7,7 @@ jobs:
     strategy:
       matrix:
         python-version:
+          - "3.12"
           - "3.13"
           - "3.14"
 
@@ -21,7 +22,7 @@ jobs:
           enable-cache: true
 
       - name: Sync dependencies
-        run: uv sync --locked --all-extras --dev
+        run: uv sync --all-extras --dev
 
       - name: Lint with pylint
         run: uv run pylint tind_client tests
