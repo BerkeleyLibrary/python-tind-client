@@ -74,9 +74,8 @@ ids = client.fetch_ids_search("collection:'Disabled Students Program Photos'")
 # return PyMARC records matching a query
 records = client.fetch_search_metadata("collection:'Disabled Students Program Photos'")
 
-# return raw XML or PyMARC records from a paginated search
-xml_results = client.search("collection:'Disabled Students Program Photos'", result_format="xml")
-pymarc_results = client.search("collection:'Disabled Students Program Photos'", result_format="pymarc")
+# search Tind with a query and write results to an XML file in the default storage directory
+records_written = client.write_search_results_to_file("Old Emperor Norton", "full_norton_results.xml")
 ```
 
 ## Running tests
