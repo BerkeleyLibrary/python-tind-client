@@ -6,7 +6,7 @@ import json
 import os
 import re
 from io import StringIO
-from typing import Any
+from typing import Any, Iterator
 import xml.etree.ElementTree as E
 
 from pymarc import Record
@@ -15,6 +15,12 @@ from pymarc.marcxml import parse_xml_to_array
 from .api import tind_get, tind_download
 from .errors import RecordNotFoundError, TINDError
 
+
+NS = "http://www.loc.gov/MARC21/slim"
+E.register_namespace("", NS)
+
+# remove namespace that ElementTree adds to records when passed
+_NS_DECL: str = f' xmlns="{NS}"'
 
 class TINDClient:
     """Client for interacting with a TIND DA instance.
@@ -159,7 +165,6 @@ class TINDClient:
         while True:
             response = self._search_request(query, search_id=search_id)
             xml, search_id = self._retrieve_xml_search_id(response)
-
             collection = xml.find("{http://www.loc.gov/MARC21/slim}collection")
             records = list(collection) if collection is not None else []
 
@@ -173,6 +178,51 @@ class TINDClient:
                 break
 
         return recs
+
+    def write_search_results_to_file(self, query: str, output_file_name: str = "tind.xml") -> int:
+        """Search TIND and stream results to an XML file.
+        
+        :param str query: A TIND search query string.
+        :param str output_file_name: filename for the output XML file.
+        :returns int: The number of records written to the file.
+        """
+        total_hits = len(self.fetch_ids_search(query))
+        recs_written = 0
+        with open(self.default_storage_dir + "/" + output_file_name, "w", encoding="utf-8") as f:
+            f.write(f'<?xml version="1.0" encoding="UTF-8"?>\n<collection xmlns="{NS}">\n')
+            for record in self._iter_xml_records(query):
+                record_xml = E.tostring(record, encoding="unicode")
+                f.write(record_xml.replace(_NS_DECL, ""))
+                f.write("\n")
+                recs_written += 1
+
+            f.write("</collection>\n")
+
+        if recs_written != total_hits:
+            raise TINDError(f"Expected {total_hits} records, but wrote {recs_written} to file.")
+        return recs_written
+
+    def _iter_xml_records(self, query: str) -> Iterator[E.Element]:
+        """Yield every ``<record>`` element from all pages of a search.
+        
+        Issues the initial search request, then yields records one at a time,
+        and continues to issue paginated search requests until all records have been yielded.
+        :param str query: A TIND search query string.
+        :yields: An iterator of XML elements representing the search results.
+        """
+        search_id: str | None = None
+
+        while True:
+            response = self._search_request(query, search_id=search_id)
+            xml, search_id = self._retrieve_xml_search_id(response)
+            collection = xml.find(f"{{{NS}}}collection")
+            if collection is None or len(collection) == 0:
+                break
+
+            yield from collection
+
+            if search_id is None:
+                break
 
     def _search_request(self, query: str, *, search_id: str | None = None) -> str:
         """Retrieve a page of MARC data records.
