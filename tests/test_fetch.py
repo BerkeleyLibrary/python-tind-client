@@ -156,27 +156,27 @@ def test_fetch_ids_search_error(
 # ---------------------------------------------------------------------------
 
 
-# def test_search_invalid_format(client: TINDClient) -> None:
-#     """search raises ValueError for unsupported result_format values."""
-#     with pytest.raises(ValueError, match="Unexpected result format"):
-#         client.search("title:test", result_format="csv")
+def test_search_invalid_format(client: TINDClient) -> None:
+    """search raises ValueError for unsupported result_format values."""
+    with pytest.raises(ValueError, match="Unexpected result format"):
+        client.search("title:test", result_format="csv")
 
 
-# def test_search_returns_xml(
-#     sample_marc_xml: str,
-#     requests_mock: req_mock.Mocker,
-#     client: TINDClient,
-# ) -> None:
-#     """search returns a list of XML strings when result_format='xml'."""
-#     # Wrap sample XML in a search_id element so pagination terminates correctly.
-#     wrapped = sample_marc_xml.replace(
-#         "<collection",
-#         "<root><search_id></search_id><collection",
-#     ).replace("</collection>", "</collection></root>")
+def test_search_returns_xml(
+    sample_marc_xml: str,
+    requests_mock: req_mock.Mocker,
+    client: TINDClient,
+) -> None:
+    """search returns a list of XML strings when result_format='xml'."""
+    # Wrap sample XML in a search_id element so pagination terminates correctly.
+    wrapped = sample_marc_xml.replace(
+        "<collection",
+        "<root><search_id></search_id><collection",
+    ).replace("</collection>", "</collection></root>")
 
-#     requests_mock.get(f"{BASE_URL}/search", text=wrapped, status_code=200)
+    requests_mock.get(f"{BASE_URL}/search", text=wrapped, status_code=200)
 
-#     results = client.search("title:sample", result_format="xml")
-#     assert isinstance(results, list)
-#     assert len(results) >= 1
-#     assert requests_mock.call_count == 1
+    results = client.search("title:sample", result_format="xml")
+    assert isinstance(results, list)
+    assert len(results) >= 1
+    assert requests_mock.call_count == 1

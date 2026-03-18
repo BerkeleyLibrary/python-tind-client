@@ -146,6 +146,39 @@ class TINDClient:
         ids = self.fetch_ids_search(query)
         return self.fetch_marc_by_ids(ids)
 
+    def search(self, query: str, result_format: str = "xml") -> list[Any]:
+        """Search TIND and return results as XML strings or PyMARC records.
+
+        :param str query: A TIND search string.
+        :param str result_format: ``'xml'`` for XML strings, ``'pymarc'`` for PyMARC records.
+        :raises ValueError: When ``result_format`` is neither ``'xml'`` nor ``'pymarc'``.
+        :returns list: Records as XML strings or PyMARC Record objects.
+        """
+        if result_format not in ("xml", "pymarc"):
+            raise ValueError(
+                f"Unexpected result format: {result_format} is neither 'xml' nor 'pymarc'"
+            )
+
+        recs: list[Any] = []
+        search_id = None
+
+        while True:
+            response = self._search_request(query, search_id=search_id)
+            xml, search_id = self._retrieve_xml_search_id(response)
+            collection = xml.find("{http://www.loc.gov/MARC21/slim}collection")
+            records = list(collection) if collection is not None else []
+
+            if result_format == "pymarc":
+                recs = recs + parse_xml_to_array(StringIO(response))
+            else:
+                for record in records:
+                    recs.append(E.tostring(record, encoding="unicode"))
+
+            if not search_id or not records:
+                break
+
+        return recs
+
     def write_search_results_to_file(self, query: str, output_file_name: str = "tind.xml") -> int:
         """Search TIND and stream results to an XML file.
         
