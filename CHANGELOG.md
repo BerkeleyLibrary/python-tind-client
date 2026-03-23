@@ -10,10 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - client method to write search results to an XML file, with validation against expected number of records to be written
 - client method to return an iterator of XML records from a search, to support streaming results for large result sets
-- xml fixture files for future tests
+- xml fixture files for testing
+- tests for the new client methods, including edge cases for validation
 
 ### Changed
 - README examples
+- lengthened max-line-length for pylint/flake8 to 120 to accomodate added typing
 
 ### Deprecated
 - N/A

@@ -179,16 +179,25 @@ class TINDClient:
 
         return recs
 
-    def write_search_results_to_file(self, query: str, output_file_name: str = "tind.xml") -> int:
+    def write_search_results_to_file(self, query: str = "", output_file_name: str = "tind.xml") -> int:
         """Search TIND and stream results to an XML file.
         
         :param str query: A TIND search query string.
         :param str output_file_name: filename for the output XML file.
         :returns int: The number of records written to the file.
         """
+        if not output_file_name.endswith(".xml"):
+            raise ValueError("output_file_name must be a string ending with .xml")
+
         total_hits = len(self.fetch_ids_search(query))
+        if total_hits == 0:
+            # Q: Should we raise an error if there are no records found, or return 0 for zero records written?
+            # raise RecordNotFoundError("No records found for the given query.")
+            return 0
+
         recs_written = 0
-        with open(self.default_storage_dir + "/" + output_file_name, "w", encoding="utf-8") as f:
+        output_path = os.path.join(self.default_storage_dir, output_file_name)
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(f'<?xml version="1.0" encoding="UTF-8"?>\n<collection xmlns="{NS}">\n')
             for record in self._iter_xml_records(query):
                 record_xml = E.tostring(record, encoding="unicode")
@@ -210,7 +219,7 @@ class TINDClient:
         :param str query: A TIND search query string.
         :yields: An iterator of XML elements representing the search results.
         """
-        search_id: str | None = None
+        search_id: str = ""
 
         while True:
             response = self._search_request(query, search_id=search_id)
@@ -221,7 +230,7 @@ class TINDClient:
 
             yield from collection
 
-            if search_id is None:
+            if not search_id:
                 break
 
     def _search_request(self, query: str, *, search_id: str | None = None) -> str:
@@ -251,8 +260,11 @@ class TINDClient:
         :returns: A parsable XML element and the search ID for the next page.
         :rtype: tuple[xml.etree.ElementTree.Element, str]
         """
-        E.register_namespace("", "http://www.loc.gov/MARC21/slim")
-        xml = E.fromstring(response)
+        try:
+            xml = E.fromstring(response)
+        except E.ParseError as e:
+            raise TINDError(f"Failed to parse xml response: {e}") from e
+
         search_id = xml.findtext("search_id", default="")
 
         return xml, search_id
