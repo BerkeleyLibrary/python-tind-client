@@ -191,8 +191,6 @@ class TINDClient:
 
         total_hits = len(self.fetch_ids_search(query))
         if total_hits == 0:
-            # Q: Should we raise an error if there are no records found, or return 0 for zero records written?
-            # raise RecordNotFoundError("No records found for the given query.")
             return 0
 
         recs_written = 0
