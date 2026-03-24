@@ -28,9 +28,7 @@ def test_fetch_metadata_success(
     client: TINDClient,
 ) -> None:
     """fetch_metadata returns a PyMARC Record for a valid record ID."""
-    requests_mock.get(
-        f"{BASE_URL}/record/12345/", text=sample_marc_xml, status_code=200
-    )
+    requests_mock.get(f"{BASE_URL}/record/12345/", text=sample_marc_xml, status_code=200)
     record = client.fetch_metadata("12345")
     assert record["245"]["a"] == "Sample Title"
 
@@ -42,9 +40,7 @@ def test_fetch_metadata_404(requests_mock: req_mock.Mocker, client: TINDClient) 
         client.fetch_metadata("99999")
 
 
-def test_fetch_metadata_empty_body(
-    requests_mock: req_mock.Mocker, client: TINDClient
-) -> None:
+def test_fetch_metadata_empty_body(requests_mock: req_mock.Mocker, client: TINDClient) -> None:
     """fetch_metadata raises RecordNotFoundError when the response body is empty."""
     requests_mock.get(f"{BASE_URL}/record/11111/", text="   ", status_code=200)
     with pytest.raises(RecordNotFoundError):
@@ -96,9 +92,7 @@ def test_fetch_file_not_found(
 # ---------------------------------------------------------------------------
 
 
-def test_fetch_file_metadata_success(
-    requests_mock: req_mock.Mocker, client: TINDClient
-) -> None:
+def test_fetch_file_metadata_success(requests_mock: req_mock.Mocker, client: TINDClient) -> None:
     """fetch_file_metadata returns a list of file metadata dicts."""
     payload = [{"name": "file.pdf", "size": 1024}]
     requests_mock.get(
@@ -110,9 +104,7 @@ def test_fetch_file_metadata_success(
     assert result[0]["name"] == "file.pdf"
 
 
-def test_fetch_file_metadata_error(
-    requests_mock: req_mock.Mocker, client: TINDClient
-) -> None:
+def test_fetch_file_metadata_error(requests_mock: req_mock.Mocker, client: TINDClient) -> None:
     """fetch_file_metadata raises TINDError on non-200 responses."""
     requests_mock.get(
         f"{BASE_URL}/record/12345/files",
@@ -128,9 +120,7 @@ def test_fetch_file_metadata_error(
 # ---------------------------------------------------------------------------
 
 
-def test_fetch_ids_search_success(
-    requests_mock: req_mock.Mocker, client: TINDClient
-) -> None:
+def test_fetch_ids_search_success(requests_mock: req_mock.Mocker, client: TINDClient) -> None:
     """fetch_ids_search returns the list of record IDs from the search response."""
     requests_mock.get(
         f"{BASE_URL}/search",
@@ -141,9 +131,7 @@ def test_fetch_ids_search_success(
     assert ids == ["1", "2", "3"]
 
 
-def test_fetch_ids_search_error(
-    requests_mock: req_mock.Mocker, client: TINDClient
-) -> None:
+def test_fetch_ids_search_error(requests_mock: req_mock.Mocker, client: TINDClient) -> None:
     """fetch_ids_search raises TINDError on non-200 responses."""
     requests_mock.get(
         f"{BASE_URL}/search",
@@ -184,6 +172,7 @@ def test_search_returns_xml(
     assert len(results) >= 1
     assert requests_mock.call_count == 1
 
+
 # ---------------------------------------------------------------------------
 # write_search_results_to_file / _iter_xml_records
 # ---------------------------------------------------------------------------
@@ -197,7 +186,7 @@ def test_write_search_results_to_file_with_malformed_output_filename(
 ) -> None:
     """write_search_results_to_file raises ValueError for a malformed output filename."""
     with pytest.raises(ValueError, match="output_file_name"):
-        client.write_search_results_to_file("", output_file_name = malformed_filename)
+        client.write_search_results_to_file("", output_file_name=malformed_filename)
 
 
 def test_write_search_results_to_file_empty_filename(client: TINDClient) -> None:
@@ -247,15 +236,18 @@ def test_write_search_results_to_file_success(
     tree = E.parse(tmp_path / "out.xml")
     records = tree.getroot().findall(f"{{{marc21_ns}}}record")
     assert len(records) == 3
-    assert tree.getroot().findtext(f"{{{marc21_ns}}}record/{{{marc21_ns}}}controlfield[@tag='001']") == "27320"
+    assert (
+        tree.getroot().findtext(f"{{{marc21_ns}}}record/{{{marc21_ns}}}controlfield[@tag='001']")
+        == "27320"
+    )
 
 
-def test_write_search_results_to_file_count_mismatch(
+def test_write_search_results_to_file_matched_but_no_records_returned(
     requests_mock: req_mock.Mocker,
     client: TINDClient,
     tmp_path: Path,
 ) -> None:
-    """write_search_results_to_file raises TINDError when streamed record count != ID count."""
+    """write_search_results_to_file raises TINDError when API returns no records for matched IDs"""
     client.default_storage_dir = str(tmp_path)
     requests_mock.get(
         f"{BASE_URL}/search",
@@ -266,13 +258,39 @@ def test_write_search_results_to_file_count_mismatch(
             {"text": (FIXTURES / "end-of-batch-tind-response.xml").read_text(), "status_code": 200},
         ],
     )
-    with pytest.raises(TINDError, match="Expected 3 records"):
+    with pytest.raises(TINDError, match="API did not return any."):
         client.write_search_results_to_file("collection:'test'", "mismatch.xml")
 
+
+def test_write_search_results_to_file_matched_but_api_mismatch(
+    requests_mock: req_mock.Mocker,
+    client: TINDClient,
+    tmp_path: Path,
+) -> None:
+    """write_search_results_to_file raises TINDError when streamed record count != ID count."""
+    client.default_storage_dir = str(tmp_path)
+    requests_mock.get(
+        f"{BASE_URL}/search",
+        response_list=[
+            # fetch_ids_search says 3 hits
+            {
+                "text": json.dumps({"hits": ["27320", "28819", "29563", "123123"]}),
+                "status_code": 200,
+            },
+            # first paginated XML batch, but only 3 records instead of 4 as expected from the IDs
+            {"text": (FIXTURES / "1st-batch-tind-response.xml").read_text(), "status_code": 200},
+            # but the XML stream returns nothing immediately
+            {"text": (FIXTURES / "end-of-batch-tind-response.xml").read_text(), "status_code": 200},
+        ],
+    )
+    with pytest.raises(TINDError, match="Expected 4 records"):
+        client.write_search_results_to_file("collection:'test'", "mismatch.xml")
+
+
 def test_write_search_results_to_file_malformed_xml_response(
-        requests_mock: req_mock.Mocker,
-        client: TINDClient,
-        tmp_path: Path,
+    requests_mock: req_mock.Mocker,
+    client: TINDClient,
+    tmp_path: Path,
 ) -> None:
     """write_search_results_to_file raises TINDError when the API returns malformed XML."""
     client.default_storage_dir = str(tmp_path)

@@ -6,6 +6,7 @@ import json
 import os
 import re
 from io import StringIO
+from pathlib import Path
 from typing import Any, Iterator
 import xml.etree.ElementTree as E
 
@@ -21,6 +22,7 @@ E.register_namespace("", NS)
 
 # remove namespace that ElementTree adds to records when passed
 _NS_DECL: str = f' xmlns="{NS}"'
+
 
 class TINDClient:
     """Client for interacting with a TIND DA instance.
@@ -63,9 +65,7 @@ class TINDClient:
         # records. Additionally, if the XML is malformed, the parser function may return
         # multiple records. We need to ensure that exactly one record is parsed.
         if len(records) != 1:
-            raise RecordNotFoundError(
-                f"Record {record} did not match exactly one record in TIND."
-            )
+            raise RecordNotFoundError(f"Record {record} did not match exactly one record in TIND.")
 
         return records[0]
 
@@ -84,9 +84,7 @@ class TINDClient:
             raise ValueError("URL is not a valid TIND file download URL.")
 
         output_target = output_dir or self.default_storage_dir
-        (status, saved_to) = tind_download(
-            file_url, output_dir=output_target, api_key=self.api_key
-        )
+        (status, saved_to) = tind_download(file_url, output_dir=output_target, api_key=self.api_key)
 
         if status != 200:
             raise RecordNotFoundError("Referenced file could not be downloaded.")
@@ -179,9 +177,11 @@ class TINDClient:
 
         return recs
 
-    def write_search_results_to_file(self, query: str = "", output_file_name: str = "tind.xml") -> int:
+    def write_search_results_to_file(
+        self, query: str = "", output_file_name: str = "tind.xml"
+    ) -> int:
         """Search TIND and stream results to an XML file.
-        
+
         :param str query: A TIND search query string.
         :param str output_file_name: filename for the output XML file.
         :returns int: The number of records written to the file.
@@ -195,15 +195,21 @@ class TINDClient:
 
         recs_written = 0
         output_path = os.path.join(self.default_storage_dir, output_file_name)
-        with open(output_path, "w", encoding="utf-8") as f:
-            f.write(f'<?xml version="1.0" encoding="UTF-8"?>\n<collection xmlns="{NS}">\n')
-            for record in self._iter_xml_records(query):
-                record_xml = E.tostring(record, encoding="unicode")
-                f.write(record_xml.replace(_NS_DECL, ""))
-                f.write("\n")
-                recs_written += 1
-
-            f.write("</collection>\n")
+        try:
+            with open(output_path, "w", encoding="utf-8") as f:
+                f.write(f'<?xml version="1.0" encoding="UTF-8"?>\n<collection xmlns="{NS}">\n')
+                for record in self._iter_xml_records(query):
+                    record_xml = E.tostring(record, encoding="unicode")
+                    f.write(record_xml.replace(_NS_DECL, ""))
+                    f.write("\n")
+                    recs_written += 1
+                if recs_written == 0:
+                    # We expected records but didn't receive any through pagination
+                    raise TINDError(f"Matched {total_hits} tind ids, but API did not return any.")
+                f.write("</collection>\n")
+        except Exception:
+            Path(output_path).unlink(missing_ok=True)
+            raise
 
         if recs_written != total_hits:
             raise TINDError(f"Expected {total_hits} records, but wrote {recs_written} to file.")
@@ -211,7 +217,7 @@ class TINDClient:
 
     def _iter_xml_records(self, query: str) -> Iterator[E.Element]:
         """Yield every ``<record>`` element from all pages of a search.
-        
+
         Issues the initial search request, then yields records one at a time,
         and continues to issue paginated search requests until all records have been yielded.
         :param str query: A TIND search query string.

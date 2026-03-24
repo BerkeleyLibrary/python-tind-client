@@ -15,7 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - README examples
-- lengthened max-line-length for pylint/flake8 to 120 to accomodate added typing
 
 ### Deprecated
 - N/A

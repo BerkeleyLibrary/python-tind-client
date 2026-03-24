@@ -62,4 +62,4 @@ skip-checking-raises = true
 style = "sphinx"
 
 [tool.pylint.format]
-max-line-length = 120
+max-line-length = 100
