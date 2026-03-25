@@ -61,3 +61,5 @@ allow-init-docstring = true
 skip-checking-raises = true
 style = "sphinx"
 
+[tool.pylint.format]
+max-line-length = 100
