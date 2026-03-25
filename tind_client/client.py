@@ -186,8 +186,6 @@ class TINDClient:
         :param str output_file_name: filename for the output XML file.
         :returns int: The number of records written to the file.
         """
-        if not output_file_name.endswith(".xml"):
-            raise ValueError("output_file_name must be a string ending with .xml")
 
         total_hits = len(self.fetch_ids_search(query))
         if total_hits == 0:
