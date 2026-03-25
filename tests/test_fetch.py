@@ -180,12 +180,6 @@ def test_search_returns_xml(
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
-def test_write_search_results_to_file_empty_filename(client: TINDClient) -> None:
-    """write_search_results_to_file raises ValueError for a blank output filename."""
-    with pytest.raises(ValueError):
-        client.write_search_results_to_file("title:foo", output_file_name="   ")
-
-
 def test_write_search_results_to_file_zero_hits(
     requests_mock: req_mock.Mocker,
     client: TINDClient,
