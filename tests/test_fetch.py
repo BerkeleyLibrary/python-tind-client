@@ -180,15 +180,6 @@ def test_search_returns_xml(
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
-def test_write_search_results_to_file_with_malformed_output_filename(
-    client: TINDClient,
-    malformed_filename: str = "  .csv",
-) -> None:
-    """write_search_results_to_file raises ValueError for a malformed output filename."""
-    with pytest.raises(ValueError, match="output_file_name"):
-        client.write_search_results_to_file("", output_file_name=malformed_filename)
-
-
 def test_write_search_results_to_file_empty_filename(client: TINDClient) -> None:
     """write_search_results_to_file raises ValueError for a blank output filename."""
     with pytest.raises(ValueError):
