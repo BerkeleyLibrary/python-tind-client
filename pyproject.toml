@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "python-tind-client"
-version = "0.1.1"
+version = "0.2.0"
 description = "Python library for interacting with the TIND DA API"
 readme = "README.md"
 license = { file = "LICENSE" }
