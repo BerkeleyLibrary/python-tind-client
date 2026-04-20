@@ -64,4 +64,3 @@ style = "sphinx"
 [tool.pylint.format]
 max-line-length = 100
 
-[tool.setuptools_scm]

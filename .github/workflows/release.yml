@@ -1,18 +1,15 @@
-name: Build dev package distributions
+name: Push Release Tags
 
 on:
-  pull_request:
-    branches:
-      - main
-    # types:
-    #   - closed
-
+  push:
+    tags:
+      - '**'
+  workflow_dispatch:
+  
 jobs:
   build:
-    # if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
-
       # we need to fetch the full repo history to use setuptools_scm
       - uses: actions/checkout@v6
         with:
@@ -30,7 +27,7 @@ jobs:
 
       - name: Build Python package
         run: uv build
-      
+
       - name: Upload package distributions as artifact
         uses: actions/upload-artifact@v7
         with:
@@ -38,3 +35,24 @@ jobs:
           path: |
             dist/
             !dist/.gitignore
+
+  
+  pypi-publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/python-tind-client
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download built package distributions
+        uses: actions/download-artifact@v8
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Public package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
