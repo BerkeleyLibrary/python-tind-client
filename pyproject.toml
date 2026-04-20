@@ -1,13 +1,13 @@
 [build-system]
-requires = ["setuptools>=80"]
+requires = ["setuptools>=80", "setuptools-scm[simple]>=9.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "python-tind-client"
-version = "0.2.1"
+dynamic = ["version"]
 description = "Python library for interacting with the TIND DA API"
 readme = "README.md"
-license = { file = "LICENSE" }
+license-files = ["LICENSE"]
 authors = [
     { name = "Jason Raitz", email = "raitz@berkeley.edu" },
     { name = "maría a. matienzo", email = "matienzo@berkeley.edu" },
@@ -63,3 +63,5 @@ style = "sphinx"
 
 [tool.pylint.format]
 max-line-length = 100
+
+[tool.setuptools_scm]
