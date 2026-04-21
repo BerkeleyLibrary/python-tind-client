@@ -1,13 +1,13 @@
 [build-system]
-requires = ["setuptools>=80"]
+requires = ["setuptools>=80", "setuptools-scm[simple]>=10.0.5"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "python-tind-client"
-version = "0.2.1"
+dynamic = ["version"]
 description = "Python library for interacting with the TIND DA API"
 readme = "README.md"
-license = { file = "LICENSE" }
+license-files = ["LICENSE"]
 authors = [
     { name = "Jason Raitz", email = "raitz@berkeley.edu" },
     { name = "maría a. matienzo", email = "matienzo@berkeley.edu" },
@@ -61,5 +61,13 @@ allow-init-docstring = true
 skip-checking-raises = true
 style = "sphinx"
 
+[tool.pylint.master]
+ignore = ["_version.py"]
+
 [tool.pylint.format]
 max-line-length = 100
+
+# the following is unnecessary, but having anything in this config section
+# suppresses a spurious build warning from setuptools_scm.
+[tool.setuptools_scm]
+version_file = "tind_client/_version.py"

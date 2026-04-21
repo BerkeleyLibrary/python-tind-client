@@ -9,6 +9,7 @@ dist/
 build/
 *.egg-info/
 *.egg
+tind_client/_version.py
 
 # Virtual environments
 .venv/
