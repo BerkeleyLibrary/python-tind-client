@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=80", "setuptools-scm[simple]>=9.2"]
+requires = ["setuptools>=80", "setuptools-scm[simple]>=10.0.5"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -61,7 +61,13 @@ allow-init-docstring = true
 skip-checking-raises = true
 style = "sphinx"
 
+[tool.pylint.master]
+ignore = ["_version.py"]
+
 [tool.pylint.format]
 max-line-length = 100
 
+# the following is unnecessary, but having anything in this config section
+# suppresses a spurious build warning from setuptools_scm.
 [tool.setuptools_scm]
+version_file = "tind_client/_version.py"
