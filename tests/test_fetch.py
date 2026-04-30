@@ -186,13 +186,12 @@ def test_write_search_results_to_file_zero_hits(
     tmp_path: Path,
 ) -> None:
     """write_search_results_to_file returns 0 immediately when the query has no hits."""
-    client.default_storage_dir = str(tmp_path)
     requests_mock.get(
         f"{BASE_URL}/search",
         text=json.dumps({"hits": []}),
         status_code=200,
     )
-    assert client.write_search_results_to_file("collection:'empty'") == 0
+    assert client.write_search_results_to_file("collection:'empty'", output_dir=str(tmp_path)) == 0
     assert not (tmp_path / "tind.xml").exists()
 
 
@@ -202,7 +201,6 @@ def test_write_search_results_to_file_success(
     tmp_path: Path,
 ) -> None:
     """write_search_results_to_file writes 3 records and returns 3."""
-    client.default_storage_dir = str(tmp_path)
     requests_mock.get(
         f"{BASE_URL}/search",
         response_list=[
@@ -214,7 +212,9 @@ def test_write_search_results_to_file_success(
             {"text": (FIXTURES / "end-of-batch-tind-response.xml").read_text(), "status_code": 200},
         ],
     )
-    count = client.write_search_results_to_file("collection:'test'", "out.xml")
+    count = client.write_search_results_to_file(
+        "collection:'test'", "out.xml", output_dir=str(tmp_path)
+    )
     assert count == 3
 
     marc21_ns = "http://www.loc.gov/MARC21/slim"
@@ -233,7 +233,6 @@ def test_write_search_results_to_file_matched_but_no_records_returned(
     tmp_path: Path,
 ) -> None:
     """write_search_results_to_file raises TINDError when API returns no records for matched IDs"""
-    client.default_storage_dir = str(tmp_path)
     requests_mock.get(
         f"{BASE_URL}/search",
         response_list=[
@@ -244,7 +243,9 @@ def test_write_search_results_to_file_matched_but_no_records_returned(
         ],
     )
     with pytest.raises(TINDError, match="API did not return any."):
-        client.write_search_results_to_file("collection:'test'", "mismatch.xml")
+        client.write_search_results_to_file(
+            "collection:'test'", "mismatch.xml", output_dir=str(tmp_path)
+        )
 
 
 def test_write_search_results_to_file_matched_but_api_mismatch(
@@ -253,7 +254,6 @@ def test_write_search_results_to_file_matched_but_api_mismatch(
     tmp_path: Path,
 ) -> None:
     """write_search_results_to_file raises TINDError when streamed record count != ID count."""
-    client.default_storage_dir = str(tmp_path)
     requests_mock.get(
         f"{BASE_URL}/search",
         response_list=[
@@ -269,7 +269,9 @@ def test_write_search_results_to_file_matched_but_api_mismatch(
         ],
     )
     with pytest.raises(TINDError, match="Expected 4 records"):
-        client.write_search_results_to_file("collection:'test'", "mismatch.xml")
+        client.write_search_results_to_file(
+            "collection:'test'", "mismatch.xml", output_dir=str(tmp_path)
+        )
 
 
 def test_write_search_results_to_file_malformed_xml_response(
@@ -278,7 +280,6 @@ def test_write_search_results_to_file_malformed_xml_response(
     tmp_path: Path,
 ) -> None:
     """write_search_results_to_file raises TINDError when the API returns malformed XML."""
-    client.default_storage_dir = str(tmp_path)
     requests_mock.get(
         f"{BASE_URL}/search",
         response_list=[
@@ -287,4 +288,6 @@ def test_write_search_results_to_file_malformed_xml_response(
         ],
     )
     with pytest.raises(TINDError, match="Failed to parse"):
-        client.write_search_results_to_file("collection:'test'", "malformed.xml")
+        client.write_search_results_to_file(
+            "collection:'test'", "malformed.xml", output_dir=str(tmp_path)
+        )

@@ -24,7 +24,6 @@ def tind_env(monkeypatch: pytest.MonkeyPatch) -> None:
     """Set required TIND environment variables for a test."""
     monkeypatch.setenv("TIND_API_KEY", "test-api-key")
     monkeypatch.setenv("TIND_API_URL", "https://tind.example.edu")
-    monkeypatch.setenv("DEFAULT_STORAGE_DIR", "/tmp")
 
 
 @pytest.fixture
@@ -39,5 +38,4 @@ def client() -> TINDClient:
     return TINDClient(
         api_key="test-api-key",
         api_url="https://tind.example.edu",
-        default_storage_dir="/tmp",
     )

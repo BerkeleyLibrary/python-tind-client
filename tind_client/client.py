@@ -29,19 +29,15 @@ class TINDClient:
 
     :param str api_key: Your TIND API token.
     :param str api_url: Base URL of the TIND instance, e.g. ``https://tind.example.edu``.
-    :param str default_storage_dir: Default directory used by :meth:`fetch_file`
-                                    when no ``output_dir`` is supplied.
     """
 
     def __init__(
         self,
         api_key: str = "",
         api_url: str = "",
-        default_storage_dir: str = "./tmp",
     ) -> None:
         self.api_key = api_key or os.environ.get("TIND_API_KEY", "")
         self.api_url = api_url or os.environ.get("TIND_API_URL", "")
-        self.default_storage_dir = default_storage_dir
 
     def fetch_metadata(self, record: str) -> Record:
         """Fetch the MARC XML metadata for a given record.
@@ -69,12 +65,12 @@ class TINDClient:
 
         return records[0]
 
-    def fetch_file(self, file_url: str, output_dir: str = "") -> str:
+    def fetch_file(self, file_url: str, output_dir: str = "./tmp") -> str:
         """Download a file from TIND and save it locally.
 
         :param str file_url: The TIND file download URL.
         :param str output_dir: Directory in which to save the file.
-                               Falls back to ``default_storage_dir`` when empty.
+                               Defaults to ``./tmp``.
         :raises AuthorizationError: When the TIND API key is invalid or the file is restricted.
         :raises ValueError: When ``file_url`` is not a valid TIND file download URL.
         :raises RecordNotFoundError: When the file is invalid or not found.
@@ -83,8 +79,7 @@ class TINDClient:
         if not re.match(r"^http.*/download(/)?(\?version=\d+)?$", file_url):
             raise ValueError("URL is not a valid TIND file download URL.")
 
-        output_target = output_dir or self.default_storage_dir
-        (status, saved_to) = tind_download(file_url, output_dir=output_target, api_key=self.api_key)
+        (status, saved_to) = tind_download(file_url, output_dir=output_dir, api_key=self.api_key)
 
         if status != 200:
             raise RecordNotFoundError("Referenced file could not be downloaded.")
@@ -178,12 +173,13 @@ class TINDClient:
         return recs
 
     def write_search_results_to_file(
-        self, query: str = "", output_file_name: str = "tind.xml"
+        self, query: str = "", output_file_name: str = "tind.xml", output_dir: str = "./tmp"
     ) -> int:
         """Search TIND and stream results to an XML file.
 
         :param str query: A TIND search query string.
         :param str output_file_name: filename for the output XML file.
+        :param str output_dir: Directory in which to save the file. Defaults to ``./tmp``.
         :returns int: The number of records written to the file.
         """
 
@@ -192,7 +188,7 @@ class TINDClient:
             return 0
 
         recs_written = 0
-        output_path = os.path.join(self.default_storage_dir, output_file_name)
+        output_path = Path(output_dir) / output_file_name
         try:
             with open(output_path, "w", encoding="utf-8") as f:
                 f.write(f'<?xml version="1.0" encoding="UTF-8"?>\n<collection xmlns="{NS}">\n')
@@ -206,7 +202,7 @@ class TINDClient:
                     raise TINDError(f"Matched {total_hits} tind ids, but API did not return any.")
                 f.write("</collection>\n")
         except Exception:
-            Path(output_path).unlink(missing_ok=True)
+            output_path.unlink(missing_ok=True)
             raise
 
         if recs_written != total_hits:

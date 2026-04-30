@@ -27,7 +27,6 @@ Create a `TINDClient` with optional configuration values:
 
 - `api_key` (optional): Your TIND API token. Falls back to the `TIND_API_KEY` environment variable.
 - `api_url` (optional): Base URL of the TIND instance (e.g. `https://tind.example.edu`). Falls back to the `TIND_API_URL` environment variable.
-- `default_storage_dir` (optional): Default output directory for downloaded files. Defaults to `./tmp`.
 
 ## Usage
 
@@ -43,7 +42,6 @@ from tind_client import TINDClient
 client = TINDClient(
 	api_key="your-token",
 	api_url="https://tind.example.edu",
-	default_storage_dir="/tmp",
 )
 ```
 
@@ -79,8 +77,8 @@ records = client.fetch_search_metadata("collection:'Disabled Students Program Ph
 xml_results = client.search("collection:'Disabled Students Program Photos'", result_format="xml")
 pymarc_results = client.search("collection:'Disabled Students Program Photos'", result_format="pymarc")
 
-# search Tind with a query and write results to an XML file in the default storage directory
-records_written = client.write_search_results_to_file("Old Emperor Norton", "full_norton_results.xml")
+# search Tind with a query and write results to an XML file
+records_written = client.write_search_results_to_file("Old Emperor Norton", "full_norton_results.xml", output_dir="/data")
 ```
 
 ## Running tests
