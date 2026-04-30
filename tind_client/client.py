@@ -178,12 +178,14 @@ class TINDClient:
         return recs
 
     def write_search_results_to_file(
-        self, query: str = "", output_file_name: str = "tind.xml"
+        self, query: str = "", output_file_name: str = "tind.xml", output_dir: str = ""
     ) -> int:
         """Search TIND and stream results to an XML file.
 
         :param str query: A TIND search query string.
         :param str output_file_name: filename for the output XML file.
+        :param str output_dir: Directory in which to save the file.
+                               Falls back to ``default_storage_dir`` when empty.
         :returns int: The number of records written to the file.
         """
 
@@ -192,9 +194,9 @@ class TINDClient:
             return 0
 
         recs_written = 0
-        output_path = os.path.join(self.default_storage_dir, output_file_name)
+        output_path = Path(output_dir or self.default_storage_dir) / output_file_name
         try:
-            with open(output_path, "w", encoding="utf-8") as f:
+            with output_path.open("w", encoding="utf-8") as f:
                 f.write(f'<?xml version="1.0" encoding="UTF-8"?>\n<collection xmlns="{NS}">\n')
                 for record in self._iter_xml_records(query):
                     record_xml = E.tostring(record, encoding="unicode")
@@ -206,7 +208,7 @@ class TINDClient:
                     raise TINDError(f"Matched {total_hits} tind ids, but API did not return any.")
                 f.write("</collection>\n")
         except Exception:
-            Path(output_path).unlink(missing_ok=True)
+            output_path.unlink(missing_ok=True)
             raise
 
         if recs_written != total_hits:
