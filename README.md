@@ -81,6 +81,13 @@ pymarc_results = client.search("collection:'Disabled Students Program Photos'", 
 
 # search Tind with a query and write results to an XML file in the default storage directory
 records_written = client.write_search_results_to_file("Old Emperor Norton", "full_norton_results.xml")
+
+# write search results to a specific directory
+records_written = client.write_search_results_to_file(
+	"Old Emperor Norton",
+	"full_norton_results.xml",
+	output_dir="/path/to/some/directory"
+)
 ```
 
 ## Running tests
