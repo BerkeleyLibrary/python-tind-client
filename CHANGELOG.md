@@ -5,21 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.4]
+
+### Added
+- `TooManyRequestsError` is raised by all API calls when the TIND API returns an HTTP 429 response.
+
+
 ## [0.2.3]
 
 ### Added
 - parameter to client.write_search_results_to_file() to specify an output directory for the file, with fallback to default_storage_dir if not provided
 - also uses PATH
 
+
 ## [0.2.2]
 
 ### Changed
 - build package and publish to pypi, using setuptools_scm for version management
 
+
 ## [0.2.1]
 
 ### Changed
  - reconciling version agreement between the releases, this file, and the pyproject.toml
+
 
 ## [0.2.0]
 

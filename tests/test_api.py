@@ -6,7 +6,7 @@ import pytest
 import requests_mock as req_mock  # noqa: F401 — activates the requests_mock fixture
 
 from tind_client.api import tind_download, tind_get
-from tind_client.errors import AuthorizationError
+from tind_client.errors import AuthorizationError, TooManyRequestsError
 
 BASE_URL = "https://tind.example.edu"
 API_KEY = "test-api-key"
@@ -36,6 +36,13 @@ def test_tind_get_raises_on_401(requests_mock: req_mock.Mocker) -> None:
     """tind_get raises AuthorizationError on HTTP 401."""
     requests_mock.get(f"{BASE_URL}/record/1/", status_code=401)
     with pytest.raises(AuthorizationError):
+        tind_get("record/1/", api_key=API_KEY, api_url=BASE_URL)
+
+
+def test_tind_get_raises_on_429(requests_mock: req_mock.Mocker) -> None:
+    """Ensure tind_get raises TooManyRequestsError on HTTP 429."""
+    requests_mock.get(f"{BASE_URL}/record/1/", status_code=429)
+    with pytest.raises(TooManyRequestsError):
         tind_get("record/1/", api_key=API_KEY, api_url=BASE_URL)
 
 
@@ -87,6 +94,14 @@ def test_tind_download_raises_on_401(requests_mock: req_mock.Mocker) -> None:
     url = f"{BASE_URL}/files/12345/download"
     requests_mock.get(url, status_code=401)
     with pytest.raises(AuthorizationError):
+        tind_download(url, "/tmp", api_key=API_KEY)
+
+
+def test_tind_download_raises_on_429(requests_mock: req_mock.Mocker) -> None:
+    """Ensure tind_download raises TooManyRequestsError on HTTP 429."""
+    url = f"{BASE_URL}/files/12345/download"
+    requests_mock.get(url, status_code=429)
+    with pytest.raises(TooManyRequestsError):
         tind_download(url, "/tmp", api_key=API_KEY)
 
 

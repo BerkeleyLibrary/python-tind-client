@@ -28,5 +28,9 @@ class AuthorizationError(TINDError):
     """Raised when authorization with the TIND API fails."""
 
 
+class TooManyRequestsError(TINDError):
+    """Raised when the TIND API has had too many requests in a short period."""
+
+
 class RecordNotFoundError(TINDError):
     """Raised when a requested record or file is not found in TIND."""

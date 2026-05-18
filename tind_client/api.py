@@ -7,7 +7,7 @@ import re
 from typing import Tuple
 import requests
 
-from .errors import AuthorizationError, TINDError
+from .errors import AuthorizationError, TINDError, TooManyRequestsError
 
 
 TIMEOUT: int = 30
@@ -39,6 +39,8 @@ def tind_get(
     :param dict|None params: Extra query parameters to send.
                              For example, ``{'of': 'xm'}``.
     :raises AuthorizationError: If an invalid TIND API key is provided.
+    :raises TooManyRequestsError: If the TIND server is overloaded with requests.
+    :raises TINDError: If an internal server error occurs during request processing.
     :returns: A tuple of the HTTP status code and response text (if any).
     :rtype: Tuple[int, str]
     """
@@ -54,6 +56,8 @@ def tind_get(
     )
     if resp.status_code == 401:
         raise AuthorizationError("Invalid TIND API key provided")
+    if resp.status_code == 429:
+        raise TooManyRequestsError("Enhance your calm")
     if resp.status_code >= 500:
         raise TINDError.from_json(resp.status_code, resp.text)
     return resp.status_code, resp.text
@@ -66,6 +70,8 @@ def tind_download(url: str, output_dir: str, api_key: str) -> Tuple[int, str]:
     :param str output_dir: The path to the directory in which to save the file.
     :param str api_key: The TIND API token.
     :raises AuthorizationError: If an invalid TIND API key is provided.
+    :raises TooManyRequestsError: If the TIND server is overloaded with requests.
+    :raises TINDError: If an internal server error occurs during request processing.
     :returns: A tuple of the HTTP status code and the path to the downloaded file (if successful).
     :rtype: Tuple[int, str]
     """
@@ -73,6 +79,8 @@ def tind_download(url: str, output_dir: str, api_key: str) -> Tuple[int, str]:
     status = resp.status_code
     if status == 401:
         raise AuthorizationError("Invalid TIND API key provided")
+    if status == 429:
+        raise TooManyRequestsError("Enhance your calm")
     if status >= 500:
         raise TINDError.from_json(status, resp.text)
     if status != 200:
