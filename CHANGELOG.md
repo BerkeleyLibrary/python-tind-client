@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased (Targeting 0.2.5)]
+
+### Added
+- Optional parameter to `fetch_file()` with a modified time of the remote file pulled from the TIND API
+- `fetch_file()` uses this to avoid unnecessary downloads if a file already exists at the target
+  location and has a modified time that is newer than the requested file
+
+### Changed
+- slight change to raise a file not downloaded error if `tind_download()` fails to return a written file path
+
+
 ## [0.2.4]
 
 ### Added
