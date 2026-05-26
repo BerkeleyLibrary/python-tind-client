@@ -74,9 +74,9 @@ class TINDClient:
 
     def fetch_file(self, file_url: str, output_dir: str = "", modified: str = "") -> str:
         """Download a file from TIND and save it locally.
-        
-        If the file already exists in the output directory and was modified at or after a supplied ``modified``
-        timestamp, the file will not be re-downloaded.
+
+        If the file already exists in the output directory and was modified at or after a supplied
+        ``modified`` timestamp, the file will not be re-downloaded.
 
         :param str file_url: The TIND file download URL.
         :param str output_dir: Directory in which to save the file.
