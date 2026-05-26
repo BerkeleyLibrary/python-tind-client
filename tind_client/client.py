@@ -73,14 +73,16 @@ class TINDClient:
         return records[0]
 
     def fetch_file(self, file_url: str, output_dir: str = "", modified: str = "") -> str:
-        """Download a file from TIND and save it locally. If the file already exists in the output
-        directory and has a local modified timestamp that is newer than supplied ``modified``
+        """Download a file from TIND and save it locally.
+        
+        If the file already exists in the output directory and was modified at or after a supplied ``modified``
         timestamp, the file will not be re-downloaded.
 
         :param str file_url: The TIND file download URL.
         :param str output_dir: Directory in which to save the file.
                                Falls back to ``default_storage_dir`` when empty.
-        :param str modified: Optional modified timestamp from the file metadata returned by TIND
+        :param str modified: Optional modified timestamp from the file metadata returned by TIND.
+                             If not specified, the file will always be downloaded.
         :raises AuthorizationError: When the TIND API key is invalid or the file is restricted.
         :raises ValueError: When ``file_url`` is not a valid TIND file download URL.
         :raises RecordNotFoundError: When the file is invalid or not found.
