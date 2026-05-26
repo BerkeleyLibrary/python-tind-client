@@ -6,11 +6,11 @@ import json
 import logging
 import os
 import re
+from datetime import datetime, timezone
 from io import StringIO
 from pathlib import Path
 from typing import Any, Iterator
 import xml.etree.ElementTree as E
-from datetime import datetime, timezone
 
 from pymarc import Record
 from pymarc.marcxml import parse_xml_to_array
