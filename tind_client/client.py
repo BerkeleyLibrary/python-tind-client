@@ -3,8 +3,10 @@ TINDClient — the main entry point for interacting with the TIND DA API.
 """
 
 import json
+import logging
 import os
 import re
+from datetime import datetime, timezone
 from io import StringIO
 from pathlib import Path
 from typing import Any, Iterator
@@ -16,6 +18,7 @@ from pymarc.marcxml import parse_xml_to_array
 from .api import tind_get, tind_download
 from .errors import RecordNotFoundError, TINDError
 
+logger = logging.getLogger(__name__)
 
 NS = "http://www.loc.gov/MARC21/slim"
 E.register_namespace("", NS)
@@ -69,12 +72,19 @@ class TINDClient:
 
         return records[0]
 
-    def fetch_file(self, file_url: str, output_dir: str = "") -> str:
+    def fetch_file(
+        self, file_url: str, output_dir: str = "", meta_mtime: datetime | None = None
+    ) -> str:
         """Download a file from TIND and save it locally.
+
+        If the file already exists in the output directory and was modified at or after a supplied
+        ``meta_mtime`` timestamp, the file will not be re-downloaded.
 
         :param str file_url: The TIND file download URL.
         :param str output_dir: Directory in which to save the file.
                                Falls back to ``default_storage_dir`` when empty.
+        :param datetime meta_mtime: Optional modified timestamp from the file metadata returned by
+                                    TIND. If not specified, the file will always be downloaded.
         :raises AuthorizationError: When the TIND API key is invalid or the file is restricted.
         :raises ValueError: When ``file_url`` is not a valid TIND file download URL.
         :raises RecordNotFoundError: When the file is invalid or not found.
@@ -84,9 +94,19 @@ class TINDClient:
             raise ValueError("URL is not a valid TIND file download URL.")
 
         output_target = output_dir or self.default_storage_dir
+
+        expected_filename = file_url.split("?")[0].rstrip("/").split("/")[-2]
+        expected_path = Path(output_target) / expected_filename
+
+        if meta_mtime and expected_path.exists():
+            local_mtime = datetime.fromtimestamp(expected_path.stat().st_mtime, tz=timezone.utc)
+            if local_mtime >= meta_mtime:
+                logger.debug("Cached file at (%s) is newer; skipping download.", expected_path)
+                return str(expected_path)
+
         (status, saved_to) = tind_download(file_url, output_dir=output_target, api_key=self.api_key)
 
-        if status != 200:
+        if status != 200 or not saved_to:
             raise RecordNotFoundError("Referenced file could not be downloaded.")
 
         return saved_to

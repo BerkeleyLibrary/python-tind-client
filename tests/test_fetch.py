@@ -5,7 +5,9 @@ Tests for TINDClient methods (fetch operations).
 import json
 import xml.etree.ElementTree as E
 
+from datetime import datetime, timezone
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import pytest
 import requests_mock as req_mock  # noqa: F401 — activates the requests_mock fixture
@@ -85,6 +87,59 @@ def test_fetch_file_not_found(
     requests_mock.get(url, status_code=404)
     with pytest.raises(RecordNotFoundError):
         client.fetch_file(url, output_dir=str(tmp_path))
+
+
+def test_fetch_file_skips_download_when_local_file_is_newer(
+    tmp_path: Path,
+    client: TINDClient,
+) -> None:
+    """fetch_file returns the cached path without downloading when local mtime >= meta_mtime."""
+
+    url = f"{BASE_URL}/api/v1/record/12345/files/some-image.jpg/download/?version=1"
+    cached = tmp_path / "some-image.jpg"
+    cached.write_bytes(b"cached content")
+
+    meta_mtime = datetime(2026, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
+    local_mtime = datetime(2026, 1, 3, 0, 0, 0, tzinfo=timezone.utc)  # newer
+
+    mock_stat = MagicMock()
+    mock_stat.st_mtime = local_mtime.timestamp()
+
+    with patch.object(Path, "stat", return_value=mock_stat):
+        result = client.fetch_file(url, output_dir=str(tmp_path), meta_mtime=meta_mtime)
+
+    assert result == str(cached)
+
+
+def test_fetch_file_redownloads_when_local_file_is_older(
+    requests_mock: req_mock.Mocker,
+    tmp_path: Path,
+    client: TINDClient,
+) -> None:
+    """fetch_file re-downloads when local mtime < meta_mtime."""
+
+    url = f"{BASE_URL}/api/v1/record/12345/files/some-other-image.jpg/download/?version=1"
+    cached = tmp_path / "some-other-image.jpg"
+    cached.write_bytes(b"stale content")
+
+    meta_mtime = datetime(2026, 1, 3, 0, 0, 0, tzinfo=timezone.utc)
+    local_mtime = datetime(2026, 1, 1, 0, 0, 0, tzinfo=timezone.utc)  # older
+
+    mock_stat = MagicMock()
+    mock_stat.st_mtime = local_mtime.timestamp()
+
+    requests_mock.get(
+        url,
+        content=b"fresh content",
+        status_code=200,
+        headers={"Content-Disposition": 'attachment; filename="some-other-image.jpg"'},
+    )
+
+    with patch.object(Path, "stat", return_value=mock_stat):
+        result = client.fetch_file(url, output_dir=str(tmp_path), meta_mtime=meta_mtime)
+
+    assert result.endswith("some-other-image.jpg")
+    assert Path(result).read_bytes() == b"fresh content"
 
 
 # ---------------------------------------------------------------------------
