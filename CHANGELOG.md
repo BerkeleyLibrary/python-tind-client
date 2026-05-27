@@ -14,7 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added tests for this new behavior.
 
 ### Changed
-- slight change to raise a file not downloaded error if `tind_download()` fails to return a written file path.
+- Raises a file not downloaded error if `tind_download()` fails to return a written file path.
+
+### Fixed
+- Found a bug in the `fetch_file()` method where the "backup" filename parsing logic would always return
+  `download` as the filename.
 
 
 ## [0.2.4]

@@ -87,7 +87,7 @@ def tind_download(url: str, output_dir: str, api_key: str) -> Tuple[int, str]:
         return status, ""
 
     # Fall-back to the file name in the URL if it isn't included in the response.
-    output_filename = url.rstrip("/").split("/")[-2]
+    output_filename = url.split("?")[0].rstrip("/").split("/")[-2]
 
     # See if we can extract the filename from the response headers.
     if "Content-Disposition" in resp.headers:

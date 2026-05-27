@@ -95,7 +95,7 @@ class TINDClient:
 
         output_target = output_dir or self.default_storage_dir
 
-        expected_filename = file_url.rstrip("/").split("/")[-2]
+        expected_filename = file_url.split("?")[0].rstrip("/").split("/")[-2]
         expected_path = Path(output_target) / expected_filename
 
         if meta_mtime and expected_path.exists():
