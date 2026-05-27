@@ -8,12 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased (Targeting 0.2.5)]
 
 ### Added
-- Optional parameter to `fetch_file()` with a modified time of the remote file pulled from the TIND API
-- `fetch_file()` uses this to avoid unnecessary downloads if a file already exists at the target
-  location and has a modified time that is newer than the requested file
+- Optional parameter to `fetch_file()` with a modified time of the remote file pulled from the TIND API.
+  `fetch_file()` uses this to avoid unnecessary downloads if a file already exists at the target
+  location and has a modified time that is newer than the requested file.
+- Added tests for this new behavior.
 
 ### Changed
-- slight change to raise a file not downloaded error if `tind_download()` fails to return a written file path
+- slight change to raise a file not downloaded error if `tind_download()` fails to return a written file path.
 
 
 ## [0.2.4]
